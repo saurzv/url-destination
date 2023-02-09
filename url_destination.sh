@@ -9,6 +9,10 @@ checkForCurl(){
     fi
 }
 
+isActiveInternet(){
+    curl -ILso /dev/null github.com  2>&1 || { echo -e "\n\tERROR: Active internet connection needed!\n" >&2; return 1; }
+}
+
 isValidURL(){
     regex='^(https?|ftp|file)://[-A-Za-z0-9\+&@#/%?=~_|!:,.;]*[-A-Za-z0-9\+&@#/%=~_|]$'
     if [[ "$@" =~ $regex ]]; then
@@ -33,6 +37,10 @@ elif [[ "$#" > 1 ]]; then
     ERROR: Only one url is allowed
     \n"
 else
+    if ! isActiveInternet; then
+        exit 1
+    fi
+
     if checkForCurl && isValidURL "$1"; then
         getDestination "$1"
     else
