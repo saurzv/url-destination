@@ -18,7 +18,8 @@ isValidURL(){
     if [[ "$@" =~ $regex ]]; then
         return 0
     else
-        echo -e "\n\tURL is not valid!\n"
+        echo -e "\n\tURL\t\t: $@"
+        echo -e "\tERROR\t\t: URL is not valid!\n"
         return 1
     fi
 }
@@ -28,10 +29,12 @@ getDestination(){
     rsp_code="$(echo $curl_rsp | awk '{print $1}')"
     url_dest="$(echo $curl_rsp | awk '{print $2}')"
 
+    echo -e "\n\tURL\t\t: "$@""
+
     if [[ "$rsp_code" == 200 ]]; then
-        echo -e "\n\tURL Destination : $url_dest\n"
+        echo -e "\tURL Destination\t: $url_dest\n"
     else
-        echo -e "\n\tERROR: URL might be broken :(\n\tStatus Code: $rsp_code\n"
+        echo -e "\tERROR\t\t: URL might be broken :(\n\tStatus Code\t: $rsp_code\n"
     fi
 }
 
@@ -40,18 +43,13 @@ if [[ "$#" == 0 ]]; then
     ERROR: URL is missing\n
     USAGE: "$0" URL
     \n"
-elif [[ "$#" > 1 ]]; then
-    echo -e "\n
-    ERROR: Only one url is allowed
-    \n"
 else
-    if ! isActiveInternet; then
+    if ! isActiveInternet && checkForCurl; then
         exit 1
     fi
 
-    if checkForCurl && isValidURL "$1"; then
-        getDestination "$1"
-    else
-        exit 1
-    fi
+    for link in "$@"
+    do
+        isValidURL $link && getDestination "$link"
+    done
 fi
